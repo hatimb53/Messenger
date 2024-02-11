@@ -4,7 +4,6 @@ import com.hb.messenger.exceptions.ErrorCode;
 import com.hb.messenger.exceptions.MessengerException;
 import com.hb.messenger.models.entities.UserEntity;
 import com.hb.messenger.repositories.UserRepository;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -12,8 +11,11 @@ import java.util.stream.Collectors;
 
 @Service
 public class UserService {
-    @Autowired
-    private  UserRepository userRepository;
+    private final UserRepository userRepository;
+
+    public UserService(UserRepository userRepository) {
+        this.userRepository = userRepository;
+    }
 
     public void createUser(String username, String password) {
        UserEntity userEntity= userRepository.findByUsername(username);

@@ -8,7 +8,7 @@ import com.hb.messenger.models.response.GenericResponse;
 import com.hb.messenger.services.UserService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
-import org.springframework.beans.factory.annotation.Autowired;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -16,12 +16,17 @@ import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/user")
+@Tag(name="User Apis")
 public class UserController {
-    @Autowired
-    private UserService userService;
+
+    private final UserService userService;
+
+    public UserController(UserService userService) {
+        this.userService = userService;
+    }
 
     @PostMapping( consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
-    @Operation
+    @Operation(summary = "Create User")
     @ApiResponse
     public ResponseEntity<GenericResponse<?>> createUser(@RequestBody UserRequest userRequest) {
         try {
@@ -38,9 +43,9 @@ public class UserController {
     }
 
     @GetMapping( produces = MediaType.APPLICATION_JSON_VALUE)
-    @Operation
+    @Operation(summary = "Fetch All Users")
     @ApiResponse
-    public ResponseEntity<GenericResponse> fetchUsers() {
+    public ResponseEntity<GenericResponse<?>> fetchUsers() {
 
         return ResponseEntity.ok(GenericResponse.builder().status(Status.SUCCES.getName())
                 .data(userService.fetchAllUsers()).build());

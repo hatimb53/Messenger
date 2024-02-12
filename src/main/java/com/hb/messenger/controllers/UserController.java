@@ -7,16 +7,24 @@ import com.hb.messenger.models.request.UserRequest;
 import com.hb.messenger.models.response.GenericResponse;
 import com.hb.messenger.services.UserService;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.enums.SecuritySchemeIn;
+import io.swagger.v3.oas.annotations.enums.SecuritySchemeType;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import io.swagger.v3.oas.annotations.security.SecurityScheme;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.annotation.security.PermitAll;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/user")
 @Tag(name="User Apis")
+@SecurityScheme(name="Bearer",type= SecuritySchemeType.APIKEY,in= SecuritySchemeIn.HEADER,paramName = "Authorization")
+@SecurityRequirement(name="Bearer")
 public class UserController {
 
     private final UserService userService;

@@ -2,34 +2,53 @@ package com.hb.messenger.services;
 
 import com.hb.messenger.exceptions.ErrorCode;
 import com.hb.messenger.exceptions.MessengerException;
+import com.hb.messenger.models.CustomUserDetails;
 import com.hb.messenger.models.entities.UserEntity;
 import com.hb.messenger.repositories.UserRepository;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
-public class UserService {
+public class UserService implements UserDetailsService {
     private final UserRepository userRepository;
+    private final PasswordEncoder passwordEncoder;
 
-    public UserService(UserRepository userRepository) {
+    public UserService(UserRepository userRepository, PasswordEncoder passwordEncoder) {
         this.userRepository = userRepository;
+        this.passwordEncoder = passwordEncoder;
     }
 
     public void createUser(String username, String password) {
-       UserEntity userEntity= userRepository.findByUsername(username);
-       if(userEntity!=null){
-           throw MessengerException.error(ErrorCode.DUPLICATE_USER);
-       }
+
+        if (userRepository.findById(username).isPresent()) {
+            throw MessengerException.error(ErrorCode.DUPLICATE_USER);
+        }
         userRepository.save(UserEntity.builder().
                 username(username)
-                .passcode(password)
+                .passcode(passwordEncoder.encode(password))
                 .build());
     }
 
-    public List<String> fetchAllUsers(){
+    public List<String> fetchAllUsers() {
         return userRepository.findAll().stream().map(UserEntity::getUsername).collect(Collectors.toList());
+    }
+
+
+    @Override
+    public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
+        Optional<UserEntity> userEntity = userRepository.findById(username);
+        if (userEntity.isEmpty()) {
+            throw new UsernameNotFoundException("could not found user..!!");
+        }
+        return new CustomUserDetails(userEntity.get());
     }
 
 }

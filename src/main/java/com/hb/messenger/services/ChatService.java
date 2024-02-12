@@ -4,7 +4,6 @@ package com.hb.messenger.services;
 import com.hb.messenger.exceptions.ErrorCode;
 import com.hb.messenger.exceptions.MessengerException;
 import com.hb.messenger.models.entities.ChatEntity;
-import com.hb.messenger.models.entities.UserEntity;
 import com.hb.messenger.models.response.Chat;
 import com.hb.messenger.models.response.ChatHistory;
 import com.hb.messenger.models.response.ReceivedMessage;

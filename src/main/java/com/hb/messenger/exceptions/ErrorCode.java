@@ -8,7 +8,9 @@ import lombok.Getter;
 public enum ErrorCode {
     DUPLICATE_USER("User already exists"),
 
-    USER_NOT_FOUND("user not found");
+    USER_NOT_FOUND("User not found"),
+
+    AUTH_ERROR("user or passcode is incorrect");
 
     private final String message;
 }

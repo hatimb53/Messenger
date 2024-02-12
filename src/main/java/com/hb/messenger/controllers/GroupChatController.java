@@ -12,24 +12,22 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.security.SecurityScheme;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import jakarta.websocket.server.PathParam;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
 @RestController
-@RequestMapping("/user/{username}/message")
+@RequestMapping("/user/{username}/message/group")
 @Tag(name="Chat Apis")
 @SecurityScheme(name="Bearer",type= SecuritySchemeType.APIKEY,in= SecuritySchemeIn.HEADER,paramName = "Authorization")
 @SecurityRequirement(name="Bearer")
-public class ChatController {
+public class GroupChatController {
 
     private final ChatService chatService;
 
-    public ChatController(ChatService chatService) {
+    public GroupChatController(ChatService chatService) {
         this.chatService = chatService;
     }
 

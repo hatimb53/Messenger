@@ -17,10 +17,10 @@ public class ChatEntity {
     @GeneratedValue(strategy= GenerationType.AUTO)
     Long id;
 
-    @Column(name = "sender", nullable = false)
+    @Column(name = "receiver", nullable = false)
     String to;
 
-    @Column(name = "receiver", nullable = false)
+    @Column(name = "sender", nullable = false)
     String from;
 
     @Column(name = "message", nullable = false)

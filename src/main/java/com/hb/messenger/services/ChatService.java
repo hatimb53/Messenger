@@ -140,10 +140,17 @@ public class ChatService {
 
   }
 
-  public List<ChatDto> fetchGroupChatHistory(String groupname) {
+  public List<ChatDto> fetchGroupChatHistory(String username,String groupname) {
+
+    Optional<GroupInfo> groupInfo=groupRepository.findById(groupname);
 
     if (groupRepository.findById(groupname).isEmpty()) {
       throw MessengerException.error(ErrorCode.GROUP_NOT_FOUND, groupname);
+    }
+    Set<String> users=groupInfo.get().getUsers().stream().map(UserInfo::getUsername).collect(Collectors.toSet());
+
+    if(!users.contains(username)){
+      throw MessengerException.error(ErrorCode.AUTHORIZATION_ERROR);
     }
     return chatRepository.fetchGroupChatHistory(groupname).stream()
         .map(x -> ChatDto.builder().username(x.getFrom()).message(x.getMessage()).build())

@@ -1,6 +1,6 @@
 package com.hb.messenger.filter;
 
-import com.hb.messenger.services.JwtService;
+import com.hb.messenger.services.AuthService;
 import com.hb.messenger.services.UserService;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -21,7 +21,7 @@ public class JwtAuthFilter extends OncePerRequestFilter {
   @Autowired
   UserService userService;
   @Autowired
-  private JwtService jwtService;
+  private AuthService authService;
 
   @Override
   protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response,
@@ -32,12 +32,12 @@ public class JwtAuthFilter extends OncePerRequestFilter {
     String username = null;
     if (authHeader != null && authHeader.startsWith("Bearer ")) {
       token = authHeader.substring(7);
-      username = jwtService.extractUsername(token);
+      username = authService.extractUsername(token);
     }
 
     if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
       UserDetails userDetails = userService.loadUserByUsername(username);
-      if (jwtService.validateToken(token, userDetails)) {
+      if (authService.validateToken(token, userDetails)) {
         UsernamePasswordAuthenticationToken authenticationToken = new UsernamePasswordAuthenticationToken(
             userDetails, null, userDetails.getAuthorities());
         authenticationToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));

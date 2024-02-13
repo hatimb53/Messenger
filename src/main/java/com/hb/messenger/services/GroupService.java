@@ -62,7 +62,7 @@ public class GroupService {
 
   }
 
-  public void removeMember(String name, String username) {
+  public void removeMember(String removedBy,String name, String username) {
     Optional<GroupInfo> group = groupRepository.findById(name);
     if (group.isEmpty()) {
       throw MessengerException.error(ErrorCode.GROUP_NOT_FOUND, name);
@@ -74,6 +74,10 @@ public class GroupService {
 
     Set<String> users = group.get().getUsers().stream().map(UserInfo::getUsername)
         .collect(Collectors.toSet());
+
+    if (!users.contains(removedBy)) {
+      throw MessengerException.error(ErrorCode.AUTHORIZATION_ERROR);
+    }
 
     if (!users.contains(username)) {
       throw MessengerException.error(ErrorCode.USER_NOT_EXIST);

@@ -1,5 +1,6 @@
 package com.hb.messenger.services;
 
+import com.hb.messenger.configs.JwtConfig;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
@@ -10,13 +11,21 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Function;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
 
 @Component
-public class JwtService {
+@Slf4j
 
-  public static final String SECRET = "357638792F423F4428472B4B6250655368566D597133743677397A2443264629";
+public class AuthService {
+
+ private final JwtConfig jwtConfig;
+
+
+  public AuthService(JwtConfig jwtConfig) {
+    this.jwtConfig = jwtConfig;
+  }
 
   public String extractUsername(String token) {
     return extractClaim(token, Claims::getSubject);
@@ -62,12 +71,12 @@ public class JwtService {
         .setClaims(claims)
         .setSubject(username)
         .setIssuedAt(new Date(System.currentTimeMillis()))
-        .setExpiration(new Date(System.currentTimeMillis() + 1000 * 60 * 1))
+        .setExpiration(new Date(System.currentTimeMillis() + jwtConfig.getExpiry()))
         .signWith(getSignKey(), SignatureAlgorithm.HS256).compact();
   }
 
   private Key getSignKey() {
-    byte[] keyBytes = Decoders.BASE64.decode(SECRET);
+    byte[] keyBytes = Decoders.BASE64.decode(jwtConfig.getSecret());
     return Keys.hmacShaKeyFor(keyBytes);
   }
 }

@@ -2,6 +2,7 @@ package com.hb.messenger.controllers;
 
 import com.hb.messenger.exceptions.ErrorCode;
 import com.hb.messenger.exceptions.MessengerException;
+import com.hb.messenger.models.CustomUserDetails;
 import com.hb.messenger.models.enums.Status;
 import com.hb.messenger.models.request.GroupMemberRequest;
 import com.hb.messenger.models.request.GroupRequest;
@@ -18,6 +19,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -43,10 +45,11 @@ public class GroupController {
   @PostMapping(produces = MediaType.APPLICATION_JSON_VALUE)
   @Operation(summary = "Create Group")
   @ApiResponse
-  public ResponseEntity<GenericResponse<?>> createGroup(UserDetails userDetails,
+  public ResponseEntity<GenericResponse<?>> createGroup(Authentication authentication,
       @RequestBody GroupRequest groupRequest) {
     try {
-      groupService.createGroup(userDetails.getUsername(), groupRequest.getName());
+      CustomUserDetails customUserDetails=(CustomUserDetails)authentication.getPrincipal();
+      groupService.createGroup(customUserDetails.getUsername(), groupRequest.getName());
     } catch (MessengerException messengerException) {
       if (messengerException.getErrorCode() == ErrorCode.DUPLICATE_GROUP) {
         return ResponseEntity.status(HttpStatus.CONFLICT).body(GenericResponse.builder().
@@ -61,10 +64,12 @@ public class GroupController {
   @PostMapping(value = "/member", produces = MediaType.APPLICATION_JSON_VALUE)
   @Operation(summary = "Add Member")
   @ApiResponse
-  public ResponseEntity<GenericResponse<?>> addMember(UserDetails userDetails,
+  public ResponseEntity<GenericResponse<?>> addMember(Authentication authentication,
       @RequestBody GroupMemberRequest groupMemberRequest) {
     try {
-      groupService.addMember(userDetails.getUsername(), groupMemberRequest.getGroupName(),
+      CustomUserDetails customUserDetails=(CustomUserDetails)authentication.getPrincipal();
+
+      groupService.addMember(customUserDetails.getUsername(), groupMemberRequest.getGroupName(),
           groupMemberRequest.getUsername());
     } catch (MessengerException messengerException) {
       return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(GenericResponse.builder().
@@ -80,10 +85,11 @@ public class GroupController {
   @DeleteMapping(value = "/member", produces = MediaType.APPLICATION_JSON_VALUE)
   @Operation(summary = "Remove Member")
   @ApiResponse
-  public ResponseEntity<GenericResponse<?>> removeMember(UserDetails userDetails,
+  public ResponseEntity<GenericResponse<?>> removeMember(Authentication authentication,
       @RequestBody GroupMemberRequest groupMemberRequest) {
+    CustomUserDetails customUserDetails=(CustomUserDetails)authentication.getPrincipal();
 
-      groupService.removeMember(groupMemberRequest.getGroupName(),
+      groupService.removeMember(customUserDetails.getUsername(),groupMemberRequest.getGroupName(),
           groupMemberRequest.getUsername());
 
     return ResponseEntity.ok(GenericResponse.builder().status(Status.SUCCES.getName())
@@ -101,7 +107,7 @@ public class GroupController {
   @GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
   @Operation(summary = "Fetch All Members of Group")
   @ApiResponse
-  public ResponseEntity<GenericResponse<?>> fetchMembers(UserDetails userDetails, @RequestParam String name) {
+  public ResponseEntity<GenericResponse<?>> fetchMembers(@RequestParam String name) {
     return ResponseEntity.ok(GenericResponse.builder().status(Status.SUCCES.getName())
         .data(groupService.fetchAllMembers(name)).build());
   }

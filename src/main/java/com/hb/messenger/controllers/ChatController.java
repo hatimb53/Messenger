@@ -2,6 +2,7 @@ package com.hb.messenger.controllers;
 
 import com.hb.messenger.exceptions.ErrorCode;
 import com.hb.messenger.exceptions.MessengerException;
+import com.hb.messenger.models.CustomUserDetails;
 import com.hb.messenger.models.enums.Status;
 import com.hb.messenger.models.request.SendMessageRequest;
 import com.hb.messenger.models.response.GenericResponse;
@@ -17,6 +18,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import java.util.List;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -42,10 +44,12 @@ public class ChatController {
   @GetMapping(value = "", produces = MediaType.APPLICATION_JSON_VALUE)
   @Operation(summary = "Fetch Unread Messages")
   @ApiResponse
-  public ResponseEntity<GenericResponse<?>> fetchUnreadMessages(UserDetails userDetails,
+  public ResponseEntity<GenericResponse<?>> fetchUnreadMessages(Authentication authentication,
       @PathVariable("username") String username) {
 
-    if(!userDetails.getUsername().equals(username)){
+    CustomUserDetails customUserDetails=(CustomUserDetails) authentication.getPrincipal();
+
+    if(!customUserDetails.getUsername().equals(username)){
       throw MessengerException.error(ErrorCode.AUTHORIZATION_ERROR);
     }
     List<UnreadMessagesDto> unreadMessagesDtoList = chatService.fetchUnreadMessages(username);
@@ -63,9 +67,14 @@ public class ChatController {
   @Operation(summary = "Send Message")
   @ApiResponse
   public ResponseEntity<GenericResponse<?>> sendMessage(
+      Authentication authentication,
       @PathVariable("username") final String username,
       @RequestBody SendMessageRequest sendMessageRequest) {
+    CustomUserDetails customUserDetails=(CustomUserDetails) authentication.getPrincipal();
 
+    if(!customUserDetails.getUsername().equals(username)){
+      throw MessengerException.error(ErrorCode.AUTHORIZATION_ERROR);
+    }
     chatService.sendMessage(sendMessageRequest.getTo(), username, sendMessageRequest.getText(),
         sendMessageRequest.getType());
 
@@ -75,8 +84,13 @@ public class ChatController {
   @GetMapping(value = "/history", produces = MediaType.APPLICATION_JSON_VALUE)
   @Operation(summary = "Fetch Chat History")
   @ApiResponse
-  public ResponseEntity<GenericResponse<?>> fetchChatHistory(
+  public ResponseEntity<GenericResponse<?>> fetchChatHistory(Authentication authentication,
       @PathVariable("username") String username, @RequestParam("friend") String friend) {
+    CustomUserDetails customUserDetails=(CustomUserDetails) authentication.getPrincipal();
+    if(!customUserDetails.getUsername().equals(username)){
+      throw MessengerException.error(ErrorCode.AUTHORIZATION_ERROR);
+    }
+
     return ResponseEntity.ok(GenericResponse.builder().status(Status.SUCCES.getName())
         .data(chatService.fetchChatHistory(username, friend)).build());
   }
@@ -84,10 +98,14 @@ public class ChatController {
   @GetMapping(value = "/group/history", produces = MediaType.APPLICATION_JSON_VALUE)
   @Operation(summary = "Fetch Group History")
   @ApiResponse
-  public ResponseEntity<GenericResponse<?>> fetchGroupChatHistory(
+  public ResponseEntity<GenericResponse<?>> fetchGroupChatHistory(Authentication authentication, @PathVariable("username") String username,
       @RequestParam("group") String group) {
-    return ResponseEntity.ok(GenericResponse.builder().status(Status.SUCCES.getName())
-        .data(chatService.fetchGroupChatHistory(group)).build());
-  }
+    CustomUserDetails customUserDetails=(CustomUserDetails) authentication.getPrincipal();
 
+    if(!customUserDetails.getUsername().equals(username)){
+      throw MessengerException.error(ErrorCode.AUTHORIZATION_ERROR);
+    }
+    return ResponseEntity.ok(GenericResponse.builder().status(Status.SUCCES.getName())
+        .data(chatService.fetchGroupChatHistory(username,group)).build());
+  }
 }

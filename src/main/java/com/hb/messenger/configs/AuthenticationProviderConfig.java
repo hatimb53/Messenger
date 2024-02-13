@@ -9,7 +9,6 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 
 @Configuration
 public class AuthenticationProviderConfig {
-
   @Bean
   public AuthenticationProvider authenticationProvider(UserService userService,
       PasswordEncoder passwordEncoder) {

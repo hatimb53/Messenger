@@ -8,7 +8,6 @@ import org.springframework.data.repository.query.Param;
 
 public interface ChatRepository extends JpaRepository<Chat, Long> {
 
-
   @Query(value = "SELECT m FROM Chat m WHERE m.type=0 and (( m.to= :userName1 and m.from = :userName2) or (m.to= :userName2 and m.from= :userName1)) order by m.timestamp")
   List<Chat> fetchChatHistory(@Param("userName1") String username1,
       @Param("userName2") String username2);

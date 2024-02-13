@@ -27,29 +27,28 @@ import lombok.NoArgsConstructor;
     @Index(name = "idx_sender_receiver", columnList = "receiver,sender"),
     @Index(name = "idx_timestamp", columnList = "timestamp"),
     @Index(name = "idx_type", columnList = "type")})
-
 public class Chat {
 
   @Id
   @GeneratedValue(strategy = GenerationType.AUTO)
-  Long id;
+  private Long id;
 
   @Enumerated(EnumType.ORDINAL)
   @Column(name = "type", nullable = false)
-  ChatType type;
+  private ChatType type;
 
   @Column(name = "receiver", nullable = false)
-  String to;
+  private String to;
 
   @Column(name = "sender", nullable = false)
-  String from;
+  private String from;
 
   @Column(name = "message", nullable = false)
-  String message;
+  private String message;
 
   @Column(name = "timestamp", insertable = false, updatable = false)
   @Temporal(TemporalType.TIMESTAMP)
-  LocalDateTime timestamp;
+  private LocalDateTime timestamp;
 
 
 }

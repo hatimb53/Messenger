@@ -2,14 +2,13 @@ package com.hb.messenger.services;
 
 import com.hb.messenger.exceptions.ErrorCode;
 import com.hb.messenger.exceptions.MessengerException;
+import com.hb.messenger.mappers.Mapper;
 import com.hb.messenger.models.entities.Chat;
 import com.hb.messenger.models.entities.GroupInfo;
 import com.hb.messenger.models.entities.UnreadMessages;
 import com.hb.messenger.models.entities.UserInfo;
 import com.hb.messenger.models.enums.ChatType;
 import com.hb.messenger.models.response.ChatDto;
-import com.hb.messenger.models.response.UnreadDirectMessagesDto;
-import com.hb.messenger.models.response.UnreadGroupMessagesDto;
 import com.hb.messenger.models.response.UnreadMessagesDto;
 import com.hb.messenger.repositories.ChatRepository;
 import com.hb.messenger.repositories.GroupRepository;
@@ -20,7 +19,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.Set;
 import java.util.stream.Collectors;
 import org.springframework.stereotype.Service;
 
@@ -74,10 +72,8 @@ public class ChatService {
         if (group.isEmpty()) {
           throw MessengerException.error(ErrorCode.GROUP_NOT_FOUND, to);
         }
-        Set<String> userBelongsToGroups = userInfo.get().getGroups().stream()
-            .map(GroupInfo::getName).collect(Collectors.toSet());
 
-        if (!userBelongsToGroups.contains(to)) {
+        if (!group.get().getUsernames().contains(from)) {
           throw MessengerException.error(ErrorCode.USER_NOT_BELONGS_TO_GROUP);
         }
 
@@ -105,17 +101,17 @@ public class ChatService {
           .filter(chat -> chat.getType().equals(ChatType.GROUP))
           .collect(Collectors.groupingBy(Chat::getTo,
               Collectors.mapping(
-                  x -> ChatDto.builder().message(x.getMessage()).username(x.getFrom()).build(),
+                  chat -> Mapper.toChatDto(chat.getMessage(),chat.getFrom()),
                   Collectors.toList())));
 
       List<UnreadMessagesDto> unreadMessagesDto = new ArrayList<>();
 
-      unreadMessagesDto.addAll(directMessages.entrySet().stream().map(x ->
-              UnreadDirectMessagesDto.builder().username(x.getKey()).texts(x.getValue()).build())
+      unreadMessagesDto.addAll(directMessages.entrySet().stream().map(unreadMessage ->
+              Mapper.toUnreadDirectMessagesDto(unreadMessage.getKey(), unreadMessage.getValue()))
           .toList());
 
-      unreadMessagesDto.addAll(groupMessages.entrySet().stream().map(x ->
-              UnreadGroupMessagesDto.builder().groupname(x.getKey()).texts(x.getValue()).build())
+      unreadMessagesDto.addAll(groupMessages.entrySet().stream().map(unreadMessage ->
+              Mapper.toUnreadGroupMessagesDto(unreadMessage.getKey(), unreadMessage.getValue()))
           .toList());
 
       unreadMessageRepository.delete(unreadMessages.get());
@@ -140,17 +136,16 @@ public class ChatService {
 
   }
 
-  public List<ChatDto> fetchGroupChatHistory(String username,String groupname) {
+  public List<ChatDto> fetchGroupChatHistory(String username, String groupname) {
 
-    Optional<GroupInfo> groupInfo=groupRepository.findById(groupname);
+    Optional<GroupInfo> groupInfo = groupRepository.findById(groupname);
 
-    if (groupRepository.findById(groupname).isEmpty()) {
+    if (groupInfo.isEmpty()) {
       throw MessengerException.error(ErrorCode.GROUP_NOT_FOUND, groupname);
     }
-    Set<String> users=groupInfo.get().getUsers().stream().map(UserInfo::getUsername).collect(Collectors.toSet());
 
-    if(!users.contains(username)){
-      throw MessengerException.error(ErrorCode.AUTHORIZATION_ERROR);
+    if (!groupInfo.get().getUsernames().contains(username)) {
+      throw MessengerException.error(ErrorCode.USER_NOT_BELONGS_TO_GROUP);
     }
     return chatRepository.fetchGroupChatHistory(groupname).stream()
         .map(x -> ChatDto.builder().username(x.getFrom()).message(x.getMessage()).build())

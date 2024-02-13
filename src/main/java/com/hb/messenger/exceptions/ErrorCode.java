@@ -18,7 +18,7 @@ public enum ErrorCode {
 
   GROUP_NOT_FOUND(404, "group not found"),
 
-  USER_NOT_BELONGS_TO_GROUP(404, "user not belongs to group"),
+  USER_NOT_BELONGS_TO_GROUP(403, "user not belongs to group"),
 
   USER_ALREADY_EXIST(409, "user already exist in group"),
 

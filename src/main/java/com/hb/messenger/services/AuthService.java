@@ -17,11 +17,8 @@ import org.springframework.stereotype.Component;
 
 @Component
 @Slf4j
-
 public class AuthService {
-
- private final JwtConfig jwtConfig;
-
+  private final JwtConfig jwtConfig;
 
   public AuthService(JwtConfig jwtConfig) {
     this.jwtConfig = jwtConfig;

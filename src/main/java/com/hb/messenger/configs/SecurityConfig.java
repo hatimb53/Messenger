@@ -1,8 +1,6 @@
 package com.hb.messenger.configs;
 
-
 import com.hb.messenger.filter.JwtAuthFilter;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
@@ -17,10 +15,6 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 
 @Configuration
 public class SecurityConfig {
-
-  @Value("${role:user}")
-  String userRole;
-
 
   @Bean
   public SecurityFilterChain securityFilterChain(HttpSecurity http,

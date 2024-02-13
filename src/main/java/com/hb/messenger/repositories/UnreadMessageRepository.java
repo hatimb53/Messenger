@@ -7,7 +7,6 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 public interface UnreadMessageRepository extends JpaRepository<UnreadMessages, Long> {
-
   @Query(value = "SELECT m FROM UnreadMessages m WHERE m.user.username= :user")
   Optional<UnreadMessages> fetchUnreadMessages(@Param("user") String username);
 }

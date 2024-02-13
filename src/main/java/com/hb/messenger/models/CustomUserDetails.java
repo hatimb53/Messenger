@@ -10,9 +10,9 @@ import org.springframework.security.core.userdetails.UserDetails;
 
 public class CustomUserDetails implements UserDetails {
 
-  String username;
-  String passcode;
-  Collection<? extends GrantedAuthority> authorities;
+  private final String username;
+  private final String passcode;
+  private final Collection<? extends GrantedAuthority> authorities;
 
   public CustomUserDetails(UserInfo userInfo) {
     this.username = userInfo.getUsername();

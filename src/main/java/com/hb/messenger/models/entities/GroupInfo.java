@@ -9,6 +9,7 @@ import jakarta.persistence.ManyToMany;
 import jakarta.persistence.Table;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.stream.Collectors;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -32,5 +33,8 @@ public class GroupInfo {
       inverseJoinColumns = @JoinColumn(name = "user_id"))
   private Set<UserInfo> users = new HashSet<>();
 
+  public Set<String> getUsernames() {
+    return this.getUsers().stream().map(UserInfo::getUsername).collect(Collectors.toSet());
+  }
 
 }

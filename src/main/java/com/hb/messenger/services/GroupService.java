@@ -6,6 +6,7 @@ import com.hb.messenger.models.entities.GroupInfo;
 import com.hb.messenger.models.entities.UserInfo;
 import com.hb.messenger.repositories.GroupRepository;
 import com.hb.messenger.repositories.UserRepository;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -42,13 +43,12 @@ public class GroupService {
     if (group.isEmpty()) {
       throw MessengerException.error(ErrorCode.GROUP_NOT_FOUND, name);
     }
-    Optional<UserInfo> userProfile = userRepository.findById(username);
-    if (userProfile.isEmpty()) {
+    Optional<UserInfo> userInfo = userRepository.findById(username);
+    if (userInfo.isEmpty()) {
       throw MessengerException.error(ErrorCode.USER_NOT_FOUND, username);
     }
 
-    Set<String> users = group.get().getUsers().stream().map(UserInfo::getUsername)
-        .collect(Collectors.toSet());
+    Set<String> users = group.get().getUsernames();
 
     if (!users.contains(addedBy)) {
       throw MessengerException.error(ErrorCode.AUTHORIZATION_ERROR);
@@ -57,7 +57,8 @@ public class GroupService {
       throw MessengerException.error(ErrorCode.USER_ALREADY_EXIST);
     }
 
-    group.get().getUsers().add(userProfile.get());
+    group.get().getUsers().add(userInfo.get());
+
     groupRepository.save(group.get());
 
   }
@@ -67,13 +68,12 @@ public class GroupService {
     if (group.isEmpty()) {
       throw MessengerException.error(ErrorCode.GROUP_NOT_FOUND, name);
     }
-    Optional<UserInfo> userProfile = userRepository.findById(username);
-    if (userProfile.isEmpty()) {
+    Optional<UserInfo> userInfo = userRepository.findById(username);
+    if (userInfo.isEmpty()) {
       throw MessengerException.error(ErrorCode.USER_NOT_FOUND, username);
     }
 
-    Set<String> users = group.get().getUsers().stream().map(UserInfo::getUsername)
-        .collect(Collectors.toSet());
+    Set<String> users = group.get().getUsernames();
 
     if (!users.contains(removedBy)) {
       throw MessengerException.error(ErrorCode.AUTHORIZATION_ERROR);
@@ -83,7 +83,7 @@ public class GroupService {
       throw MessengerException.error(ErrorCode.USER_NOT_EXIST);
     }
 
-    group.get().getUsers().remove(userProfile.get());
+    group.get().getUsers().remove(userInfo.get());
     groupRepository.save(group.get());
   }
 
@@ -94,8 +94,7 @@ public class GroupService {
   public List<String> fetchAllMembers(String name) {
     Optional<GroupInfo> group = groupRepository.findById(name);
     if (group.isPresent()) {
-      return group.get().getUsers().stream().map(UserInfo::getUsername)
-          .collect(Collectors.toList());
+      return new ArrayList<>(group.get().getUsernames());
     } else {
       throw MessengerException.error(ErrorCode.GROUP_NOT_FOUND, name);
     }

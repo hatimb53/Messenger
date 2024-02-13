@@ -11,17 +11,17 @@ import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExcep
 public class GenericExceptionHandler extends ResponseEntityExceptionHandler {
 
   @ExceptionHandler({MessengerException.class})
-  public ResponseEntity<?> handleMessengerException(MessengerException ex) {
-    return ResponseEntity.status(ex.getErrorCode().getStatus()).body(
+  public ResponseEntity<?> handleMessengerException(Exception ex) {
+    int status=500;
+    if(ex instanceof MessengerException messengerException) {
+      status=messengerException.getErrorCode().getStatus();
+
+    }
+    return ResponseEntity.status(status).body(
         GenericResponse.builder().status(Status.FAILURE.getName()).message(ex.getMessage())
             .build());
+
   }
 
-  @ExceptionHandler({Exception.class})
-  public ResponseEntity<?> handleMessengerException(Exception ex) {
-    return ResponseEntity.status(500).body(
-        GenericResponse.builder().status(Status.FAILURE.getName()).message(ex.getMessage())
-            .build());
-  }
 }
 

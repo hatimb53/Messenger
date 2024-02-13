@@ -1,7 +1,7 @@
 ## Simple Messenger System Read Me
 
 ### Overview
-This Simple Messenger system is built using Spring Boot with Java, incorporating JWT for authentication and authorization, and JPA for database persistence. It provides both one-on-one chat and group chat functionality and can be easily deployed using Docker Compose.
+This Simple Messenger system is built using Spring Boot with Java, incorporating JWT for authentication and authorization, and h2 db with JPA framework for database persistence. It provides both one-on-one chat and group chat functionality and can be easily deployed using Docker Compose.
 
 ### Features
 - **Chat:** Users can send message to each other.
@@ -26,6 +26,7 @@ This Simple Messenger system is built using Spring Boot with Java, incorporating
 - **User Profile:**
     - Create New user
     - Get token from login api which will be used to access rest of the functionalities
+    - Token will be expired after few time
     - Fetch all users
 -  **Group :**
     - Create groups

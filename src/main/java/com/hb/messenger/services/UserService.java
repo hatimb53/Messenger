@@ -41,12 +41,11 @@ public class UserService implements UserDetailsService {
         .collect(Collectors.toList());
   }
 
-
   @Override
   public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
     Optional<UserInfo> userEntity = userRepository.findById(username);
     if (userEntity.isEmpty()) {
-      throw new UsernameNotFoundException("could not found user..!!");
+      throw MessengerException.error(ErrorCode.USER_NOT_FOUND);
     }
     return new CustomUserDetails(userEntity.get());
   }

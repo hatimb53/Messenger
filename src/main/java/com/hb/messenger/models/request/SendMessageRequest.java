@@ -8,7 +8,7 @@ import lombok.Getter;
 @Getter
 public class SendMessageRequest {
 
-  String to;
-  ChatType type;
-  String text;
+  private String to;
+  private ChatType type;
+  private String text;
 }

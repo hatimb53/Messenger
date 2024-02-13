@@ -23,11 +23,11 @@ public class UserInfo {
 
   @Id
   @Column(name = "username", nullable = false)
-  String username;
+  private String username;
 
   @JsonIgnore
   @Column(name = "passcode", nullable = false)
-  String passcode;
+  private String passcode;
 
   @ManyToMany(mappedBy = "users")
   private Set<GroupInfo> groups = new HashSet<>();

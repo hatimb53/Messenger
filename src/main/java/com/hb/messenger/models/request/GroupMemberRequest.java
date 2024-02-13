@@ -9,6 +9,6 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class GroupMemberRequest {
 
-  String groupName;
-  String username;
+  private String groupName;
+  private String username;
 }

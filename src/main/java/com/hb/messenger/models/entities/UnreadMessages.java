@@ -26,10 +26,10 @@ public class UnreadMessages {
 
   @OneToOne
   @JoinColumn(name = "username")
-  UserInfo user;
+  private UserInfo user;
   @OneToMany
   @JoinColumn(name = "chat_id", referencedColumnName = "id")
-  List<Chat> chatList;
+  private List<Chat> chatList;
   @Id
   @GeneratedValue(strategy = GenerationType.AUTO)
   private Long id;

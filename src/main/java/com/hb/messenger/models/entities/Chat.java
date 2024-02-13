@@ -1,5 +1,6 @@
 package com.hb.messenger.models.entities;
 
+import com.hb.messenger.models.enums.ChatType;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -10,12 +11,19 @@ import java.time.LocalDateTime;
 @Data
 @NoArgsConstructor
 @Entity
-@Table(name = "chat")
-public class ChatEntity {
+@Table(name = "chat",indexes = {@Index(name="idx_sender_receiver",columnList = "receiver,sender"),
+@Index(name="idx_timestamp",columnList = "timestamp"),
+        @Index(name="idx_type",columnList = "type")})
+
+public class Chat {
 
     @Id
     @GeneratedValue(strategy= GenerationType.AUTO)
     Long id;
+
+    @Enumerated(EnumType.ORDINAL)
+    @Column(name="type",nullable = false)
+    ChatType type;
 
     @Column(name = "receiver", nullable = false)
     String to;
@@ -30,6 +38,5 @@ public class ChatEntity {
     @Temporal(TemporalType.TIMESTAMP)
     LocalDateTime timestamp;
 
-    @Column(name="isRead",nullable = false)
-    boolean isRead;
+
 }

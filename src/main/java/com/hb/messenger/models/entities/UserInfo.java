@@ -15,14 +15,19 @@ import java.util.Set;
 @Getter
 @NoArgsConstructor
 @Entity
-@Table(name="userprofile")
-public class UserEntity {
+@Table(name = "user_info")
+public class UserInfo {
 
     @Id
+    @Column(name = "username", nullable = false)
     String username;
 
     @JsonIgnore
-    @Column(name="passcode",nullable = false)
+    @Column(name = "passcode", nullable = false)
     String passcode;
+
+    @ManyToMany(mappedBy = "users")
+    private Set<GroupInfo> groups = new HashSet<>();
+
 
 }

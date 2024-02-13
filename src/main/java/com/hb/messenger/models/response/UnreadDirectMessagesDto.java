@@ -11,6 +11,7 @@ import java.util.List;
 @AllArgsConstructor
 @NoArgsConstructor
 @Getter
-public class ChatHistory {
-    List<Chat> texts;
+public class UnreadDirectMessagesDto extends UnreadMessagesDto {
+    String username;
+    List<String> texts;
 }

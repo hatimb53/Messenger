@@ -37,14 +37,13 @@ public class AuthController {
 
 
     @PostMapping("/login")
-    public ResponseEntity<GenericResponse<?>> AuthenticateAndGetToken(@RequestBody AuthRequest authRequestDTO) {
+    public ResponseEntity<GenericResponse<?>> login(@RequestBody AuthRequest authRequestDTO) {
         Authentication authentication = authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(authRequestDTO.getUsername(), authRequestDTO.getPassword()));
         if (authentication.isAuthenticated()) {
             return ResponseEntity.ok(GenericResponse.builder().status(Status.SUCCES.getName()).data(AuthResponse.builder().token(jwtService.generateToken(authRequestDTO.getUsername())).build()).build());
         } else {
             return ResponseEntity.status(HttpStatus.CONFLICT).body(GenericResponse.builder().
                     status(Status.FAILURE.getName()).message(ErrorCode.AUTH_ERROR.getMessage()).build());
-
         }
     }
 //    @PostMapping("/logout")

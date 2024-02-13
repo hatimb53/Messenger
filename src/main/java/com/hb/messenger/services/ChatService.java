@@ -1,18 +1,23 @@
 package com.hb.messenger.services;
 
-
 import com.hb.messenger.exceptions.ErrorCode;
 import com.hb.messenger.exceptions.MessengerException;
-import com.hb.messenger.models.entities.ChatEntity;
-import com.hb.messenger.models.response.Chat;
-import com.hb.messenger.models.response.ChatHistory;
-import com.hb.messenger.models.response.ReceivedMessage;
+import com.hb.messenger.models.entities.Chat;
+import com.hb.messenger.models.entities.GroupInfo;
+import com.hb.messenger.models.entities.UnreadMessages;
+import com.hb.messenger.models.entities.UserInfo;
+import com.hb.messenger.models.enums.ChatType;
+import com.hb.messenger.models.response.ChatDto;
+import com.hb.messenger.models.response.UnreadDirectMessagesDto;
+import com.hb.messenger.models.response.UnreadGroupMessagesDto;
+import com.hb.messenger.models.response.UnreadMessagesDto;
 import com.hb.messenger.repositories.ChatRepository;
+import com.hb.messenger.repositories.GroupRepository;
+import com.hb.messenger.repositories.UnreadMessageRepository;
 import com.hb.messenger.repositories.UserRepository;
 import org.springframework.stereotype.Service;
 
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -21,45 +26,108 @@ public class ChatService {
 
     private final UserRepository userRepository;
 
-    public ChatService(ChatRepository chatRepository, UserRepository userRepository) {
+    private final UnreadMessageRepository unreadMessageRepository;
+
+    private final GroupRepository groupRepository;
+
+    public ChatService(ChatRepository chatRepository, UserRepository userRepository, UnreadMessageRepository unreadMessageRepository, GroupRepository groupRepository) {
         this.chatRepository = chatRepository;
         this.userRepository = userRepository;
+        this.unreadMessageRepository = unreadMessageRepository;
+        this.groupRepository = groupRepository;
     }
 
-    public void sendMessage(String to, String from, String message) {
+    private void saveUnreadMessage(String username,Chat chat){
+        Optional<UnreadMessages> unreadMessages=  unreadMessageRepository.fetchUnreadMessages(username);
 
-        if (userRepository.findById(to).isPresent() && userRepository.findById(from).isPresent()) {
-            chatRepository.save(ChatEntity.builder().to(to).from(from).message(message).isRead(false).build());
-        }
-        else{
-            throw MessengerException.error(ErrorCode.USER_NOT_FOUND);
+        if (unreadMessages.isPresent()) {
+            unreadMessages.get().getChatList().add(chat);
+            unreadMessageRepository.save(unreadMessages.get());
+        } else {
+            unreadMessageRepository.save(UnreadMessages.builder().user(userRepository.findById(username).get()).chatList(List.of(chat)).build());
         }
     }
+    public void sendMessage(String to, String from, String message, ChatType type) {
 
-    public List<ReceivedMessage> fetchUnreadMessages(String username) {
-        if (userRepository.findById(username).isPresent()) {
-            List<ChatEntity> messageEntities = chatRepository.fetchUnreadMessages(username);
-            messageEntities.forEach(x -> x.setRead(true));
-            chatRepository.saveAll(messageEntities);
-            Map<String, List<String>> messages = messageEntities.stream().collect(Collectors.groupingBy(ChatEntity::getFrom,
-                    Collectors.mapping(ChatEntity::getMessage, Collectors.toList())));
-            return messages.entrySet().stream().map(x -> ReceivedMessage.builder().username(x.getKey()).texts(x.getValue()).build())
-                    .collect(Collectors.toList());
+        Optional<UserInfo> userInfo=userRepository.findById(from);
+        if(userInfo.isEmpty()){
+            throw MessengerException.error(ErrorCode.USER_NOT_FOUND,from);
+        }
+       Chat chat= chatRepository.save(Chat.builder().to(to).from(from).message(message).type(type).build());
+
+        switch (type){
+            case DIRECT -> {
+               saveUnreadMessage(to,chat);
+            }
+            case GROUP -> {
+                Optional<GroupInfo> group=groupRepository.findById(to);
+                if(group.isEmpty()){
+                    throw MessengerException.error(ErrorCode.GROUP_NOT_FOUND,to);
+                }
+                Set<String> userBelongsToGroups=userInfo.get().getGroups().stream().map(GroupInfo::getName).collect(Collectors.toSet());
+
+                if(!userBelongsToGroups.contains(to)){
+                    throw MessengerException.error(ErrorCode.USER_NOT_BELONGS_TO_GROUP);
+                }
+
+               for(UserInfo user: group.get().getUsers()){
+                   if(!user.getUsername().equals(from)){
+                       saveUnreadMessage(user.getUsername(),chat);
+                   }
+               }
+            }
         }
 
-        throw MessengerException.error(ErrorCode.USER_NOT_FOUND);
     }
 
-    public ChatHistory fetchChatHistory(String username1, String username2) {
-        if (userRepository.findById(username1).isPresent() && userRepository.findById(username2).isPresent()) {
-            List<ChatEntity> messageEntities = chatRepository.fetchChatHistory(username1, username2);
-            return ChatHistory.builder().texts(messageEntities.stream().map(x -> Chat.builder().username(x.getFrom())
-                            .message(x.getMessage()).build()).collect(Collectors.toList())).build();
+    public List<UnreadMessagesDto> fetchUnreadMessages(String username) {
 
+        Optional<UnreadMessages> unreadMessages = unreadMessageRepository.fetchUnreadMessages(username);
+
+        if(unreadMessages.isPresent()) {
+            Map<String, List<String>> directMessages = unreadMessages.get().getChatList().stream().filter(chat -> chat.getType().equals(ChatType.DIRECT))
+                    .collect(Collectors.groupingBy(Chat::getFrom,
+                            Collectors.mapping(Chat::getMessage, Collectors.toList())));
+
+            Map<String, List<ChatDto>> groupMessages = unreadMessages.get().getChatList().stream().filter(chat -> chat.getType().equals(ChatType.GROUP))
+                    .collect(Collectors.groupingBy(Chat::getTo,
+                            Collectors.mapping(x -> ChatDto.builder().message(x.getMessage()).username(x.getFrom()).build(), Collectors.toList())));
+
+            List<UnreadMessagesDto> unreadMessagesDto = new ArrayList<>();
+
+            unreadMessagesDto.addAll(directMessages.entrySet().stream().map(x ->
+                    UnreadDirectMessagesDto.builder().username(x.getKey()).texts(x.getValue()).build()).toList());
+
+            unreadMessagesDto.addAll(groupMessages.entrySet().stream().map(x ->
+                    UnreadGroupMessagesDto.builder().groupname(x.getKey()).texts(x.getValue()).build()).toList());
+
+            unreadMessageRepository.delete(unreadMessages.get());
+            return unreadMessagesDto;
+        }
+        return Collections.emptyList();
+
+    }
+
+    public List<ChatDto> fetchChatHistory(String username1, String username2) {
+        if(userRepository.findById(username1).isEmpty()){
+            throw MessengerException.error(ErrorCode.USER_NOT_FOUND, username1);
+        }
+        if(userRepository.findById(username2).isEmpty()){
+            throw MessengerException.error(ErrorCode.USER_NOT_FOUND, username2);
         }
 
-        throw MessengerException.error(ErrorCode.USER_NOT_FOUND);
+        return chatRepository.fetchChatHistory(username1, username2).stream().map(x->ChatDto.builder().username(x.getFrom()).message(x.getMessage()).build()).collect(Collectors.toList());
+
+
     }
 
+    public List<ChatDto> fetchGroupChatHistory(String groupname) {
+
+        if (groupRepository.findById(groupname).isEmpty()) {
+            throw MessengerException.error(ErrorCode.GROUP_NOT_FOUND,groupname);
+        }
+        return chatRepository.fetchGroupChatHistory(groupname).stream().map(x->ChatDto.builder().username(x.getFrom()).message(x.getMessage()).build()).collect(Collectors.toList());
+
+    }
 
 }

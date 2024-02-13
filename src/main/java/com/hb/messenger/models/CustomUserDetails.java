@@ -1,6 +1,6 @@
 package com.hb.messenger.models;
 
-import com.hb.messenger.models.entities.UserEntity;
+import com.hb.messenger.models.entities.UserInfo;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -15,9 +15,9 @@ public class CustomUserDetails implements UserDetails {
     String passcode;
     Collection<? extends GrantedAuthority> authorities;
 
-    public CustomUserDetails(UserEntity userEntity) {
-        this.username=userEntity.getUsername();
-        this.passcode=userEntity.getPasscode();
+    public CustomUserDetails(UserInfo userInfo) {
+        this.username= userInfo.getUsername();
+        this.passcode= userInfo.getPasscode();
 
         List<GrantedAuthority> auths = new ArrayList<>();
         auths.add(new SimpleGrantedAuthority("USER"));

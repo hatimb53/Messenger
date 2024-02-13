@@ -96,7 +96,7 @@ public class ChatController {
   }
 
   @GetMapping(value = "/group/history", produces = MediaType.APPLICATION_JSON_VALUE)
-  @Operation(summary = "Fetch Group History")
+  @Operation(summary = "Fetch Group Chat History")
   @ApiResponse
   public ResponseEntity<GenericResponse<?>> fetchGroupChatHistory(Authentication authentication, @PathVariable("username") String username,
       @RequestParam("group") String group) {

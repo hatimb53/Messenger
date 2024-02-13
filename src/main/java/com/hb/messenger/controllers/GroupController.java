@@ -105,7 +105,7 @@ public class GroupController {
   }
 
   @GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
-  @Operation(summary = "Fetch All Members of Group")
+  @Operation(summary = "Fetch All Members of the Group")
   @ApiResponse
   public ResponseEntity<GenericResponse<?>> fetchMembers(@RequestParam String name) {
     return ResponseEntity.ok(GenericResponse.builder().status(Status.SUCCES.getName())

@@ -16,7 +16,11 @@ public enum ErrorCode {
 
     GROUP_NOT_FOUND("group not found"),
 
-    USER_NOT_BELONGS_TO_GROUP("user not belongs to group");
+    USER_NOT_BELONGS_TO_GROUP("user not belongs to group"),
+
+    USER_ALREADY_EXIST("user already exist in group"),
+
+    USER_NOT_EXIST("user not exist in group");
 
     private final String message;
 }

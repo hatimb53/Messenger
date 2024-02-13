@@ -42,7 +42,6 @@ public class GroupController {
             if (messengerException.getErrorCode() == ErrorCode.DUPLICATE_GROUP) {
                 return ResponseEntity.status(HttpStatus.CONFLICT).body(GenericResponse.builder().
                         status(Status.FAILURE.getName()).message(messengerException.getErrorCode().getMessage()).build());
-
             }
         }
         return ResponseEntity.ok(GenericResponse.builder().status(Status.SUCCES.getName())

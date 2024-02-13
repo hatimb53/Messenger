@@ -10,6 +10,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 @Service
@@ -43,6 +44,12 @@ public class GroupService {
            throw MessengerException.error(ErrorCode.USER_NOT_FOUND,username);
        }
 
+       Set<String> users=group.get().getUsers().stream().map(UserInfo::getUsername).collect(Collectors.toSet());
+
+       if(users.contains(username)){
+           throw MessengerException.error(ErrorCode.USER_ALREADY_EXIST);
+       }
+
         group.get().getUsers().add(userProfile.get());
         groupRepository.save(group.get());
 
@@ -56,6 +63,12 @@ public class GroupService {
         Optional<UserInfo> userProfile=userRepository.findById(username);
         if(userProfile.isEmpty()){
             throw MessengerException.error(ErrorCode.USER_NOT_FOUND,username);
+        }
+
+        Set<String> users=group.get().getUsers().stream().map(UserInfo::getUsername).collect(Collectors.toSet());
+
+        if(!users.contains(username)){
+            throw MessengerException.error(ErrorCode.USER_NOT_EXIST);
         }
 
         group.get().getUsers().remove(userProfile.get());

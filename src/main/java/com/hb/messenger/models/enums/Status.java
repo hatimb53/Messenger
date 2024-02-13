@@ -6,9 +6,9 @@ import lombok.Getter;
 @AllArgsConstructor
 @Getter
 public enum Status {
-    SUCCES("success"),
-    FAILURE("failure");
+  SUCCES("success"),
+  FAILURE("failure");
 
-    private String name;
+  private String name;
 
 }

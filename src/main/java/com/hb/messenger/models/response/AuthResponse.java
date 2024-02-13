@@ -1,11 +1,15 @@
 package com.hb.messenger.models.response;
 
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
 
 @AllArgsConstructor
 @NoArgsConstructor
 @Getter
 @Builder
 public class AuthResponse {
-    String token;
+
+  String token;
 }

@@ -21,31 +21,36 @@ import org.springframework.web.bind.annotation.RestController;
 @Tag(name = "Auth Apis")
 public class AuthController {
 
-    private final UserService userService;
+  private final UserService userService;
 
-    private final AuthenticationManager authenticationManager;
+  private final AuthenticationManager authenticationManager;
 
-    private final JwtService jwtService;
+  private final JwtService jwtService;
 
 
-    public AuthController(UserService userService, AuthenticationManager authenticationManager, JwtService jwtService) {
-        this.userService = userService;
-        this.authenticationManager = authenticationManager;
-        this.jwtService = jwtService;
+  public AuthController(UserService userService, AuthenticationManager authenticationManager,
+      JwtService jwtService) {
+    this.userService = userService;
+    this.authenticationManager = authenticationManager;
+    this.jwtService = jwtService;
+  }
+
+
+  @PostMapping("/login")
+  public ResponseEntity<GenericResponse<?>> login(@RequestBody AuthRequest authRequestDTO) {
+    Authentication authentication = authenticationManager.authenticate(
+        new UsernamePasswordAuthenticationToken(authRequestDTO.getUsername(),
+            authRequestDTO.getPassword()));
+    if (authentication.isAuthenticated()) {
+      return ResponseEntity.ok(GenericResponse.builder().status(Status.SUCCES.getName()).data(
+          AuthResponse.builder().token(jwtService.generateToken(authRequestDTO.getUsername()))
+              .build()).build());
+    } else {
+      return ResponseEntity.status(HttpStatus.CONFLICT).body(GenericResponse.builder().
+          status(Status.FAILURE.getName()).message(ErrorCode.AUTHENTICATION_ERROR.getMessage())
+          .build());
     }
-
-
-
-    @PostMapping("/login")
-    public ResponseEntity<GenericResponse<?>> login(@RequestBody AuthRequest authRequestDTO) {
-        Authentication authentication = authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(authRequestDTO.getUsername(), authRequestDTO.getPassword()));
-        if (authentication.isAuthenticated()) {
-            return ResponseEntity.ok(GenericResponse.builder().status(Status.SUCCES.getName()).data(AuthResponse.builder().token(jwtService.generateToken(authRequestDTO.getUsername())).build()).build());
-        } else {
-            return ResponseEntity.status(HttpStatus.CONFLICT).body(GenericResponse.builder().
-                    status(Status.FAILURE.getName()).message(ErrorCode.AUTH_ERROR.getMessage()).build());
-        }
-    }
+  }
 //    @PostMapping("/logout")
 //    public ResponseEntity<?> logout(@RequestHeader("Authorization") String auth) {
 //        // Extract token from request header or cookie

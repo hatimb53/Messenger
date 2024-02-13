@@ -6,21 +6,25 @@ import lombok.Getter;
 @AllArgsConstructor
 @Getter
 public enum ErrorCode {
-    DUPLICATE_USER("User already exists"),
+  DUPLICATE_USER(409, "User already exists"),
 
-    DUPLICATE_GROUP("Group already exists"),
+  DUPLICATE_GROUP(409, "Group already exists"),
 
-    USER_NOT_FOUND("User not found"),
+  USER_NOT_FOUND(404, "User not found"),
 
-    AUTH_ERROR("user or passcode is incorrect"),
+  AUTHENTICATION_ERROR(401, "user or passcode is incorrect"),
 
-    GROUP_NOT_FOUND("group not found"),
+  AUTHORIZATION_ERROR(403, "not authorized"),
 
-    USER_NOT_BELONGS_TO_GROUP("user not belongs to group"),
+  GROUP_NOT_FOUND(404, "group not found"),
 
-    USER_ALREADY_EXIST("user already exist in group"),
+  USER_NOT_BELONGS_TO_GROUP(404, "user not belongs to group"),
 
-    USER_NOT_EXIST("user not exist in group");
+  USER_ALREADY_EXIST(409, "user already exist in group"),
 
-    private final String message;
+  USER_NOT_EXIST(404, "user not exist in group");
+
+  private final int status;
+
+  private final String message;
 }

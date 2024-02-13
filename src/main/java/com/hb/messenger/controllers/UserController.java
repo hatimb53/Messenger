@@ -13,51 +13,48 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.security.SecurityScheme;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import jakarta.annotation.security.PermitAll;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.security.core.Authentication;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping("/user")
-@Tag(name="User Apis")
-@SecurityScheme(name="Bearer",type= SecuritySchemeType.APIKEY,in= SecuritySchemeIn.HEADER,paramName = "Authorization")
-@SecurityRequirement(name="Bearer")
+@Tag(name = "User Apis")
+@SecurityScheme(name = "Bearer", type = SecuritySchemeType.APIKEY, in = SecuritySchemeIn.HEADER, paramName = "Authorization")
+@SecurityRequirement(name = "Bearer")
 public class UserController {
 
-    private final UserService userService;
+  private final UserService userService;
 
-    public UserController(UserService userService) {
-        this.userService = userService;
-    }
+  public UserController(UserService userService) {
+    this.userService = userService;
+  }
 
-    @PostMapping( consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
-    @Operation(summary = "Create User")
-    @ApiResponse
-    public ResponseEntity<GenericResponse<?>> createUser(@RequestBody UserRequest userRequest) {
-        try {
-            userService.createUser(userRequest.getUsername(), userRequest.getPasscode());
-        } catch (MessengerException messengerException) {
-            if (messengerException.getErrorCode() == ErrorCode.DUPLICATE_USER) {
-                return ResponseEntity.status(HttpStatus.CONFLICT).body(GenericResponse.builder().
-                        status(Status.FAILURE.getName()).message(messengerException.getErrorCode().getMessage()).build());
+  @PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+  @Operation(summary = "Create User")
+  @ApiResponse
+  public ResponseEntity<GenericResponse<?>> createUser(@RequestBody UserRequest userRequest) {
 
-            }
-        }
-        return ResponseEntity.ok(GenericResponse.builder().status(Status.SUCCES.getName())
-                .message("User created successfully").build());
-    }
+      userService.createUser(userRequest.getUsername(), userRequest.getPasscode());
 
-    @GetMapping( produces = MediaType.APPLICATION_JSON_VALUE)
-    @Operation(summary = "Fetch All Users")
-    @ApiResponse
-    public ResponseEntity<GenericResponse<?>> fetchUsers() {
+    return ResponseEntity.ok(GenericResponse.builder().status(Status.SUCCES.getName())
+        .message("User created successfully").build());
+  }
 
-        return ResponseEntity.ok(GenericResponse.builder().status(Status.SUCCES.getName())
-                .data(userService.fetchAllUsers()).build());
-    }
+  @GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
+  @Operation(summary = "Fetch All Users")
+  @ApiResponse
+  public ResponseEntity<GenericResponse<?>> fetchUsers(Authentication authentication) {
+
+    return ResponseEntity.ok(GenericResponse.builder().status(Status.SUCCES.getName())
+        .data(userService.fetchAllUsers()).build());
+  }
 }
 
 

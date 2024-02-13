@@ -8,6 +8,9 @@
       <plugin>
         <artifactId>spring-boot-maven-plugin</artifactId>
         <configuration>
+          <jvmArguments>
+            -Xdebug -Xrunjdwp:transport=dt_socket,server=y,suspend=n,address=*:5005
+          </jvmArguments>
           <excludes>
             <exclude>
               <artifactId>lombok</artifactId>
